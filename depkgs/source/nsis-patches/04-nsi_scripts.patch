@@ -1,0 +1,28 @@
+Description: Use relative paths in .nsi script examples
+ The patch replaces the absolute paths in the example scripts of System
+ and nsDialogs with relative paths.
+Forwarded: http://sf.net/support/tracker.php?aid=3293899
+Author: Thomas Gaugler <thomas@dadie.net>
+
+--- nsis-2.46.orig/Contrib/System/SysFunc.nsh.orig	2007-12-01 12:43:02.000000000 +0100
++++ nsis-2.46/Contrib/System/SysFunc.nsh	2011-04-27 09:35:22.000000000 +0200
+@@ -7,7 +7,7 @@
+ !ifndef SysFunc.NSH.Included
+ !define SysFunc.NSH.Included
+ 
+-!include "${NSISDIR}\Examples\System\System.nsh"
++!include "System.nsh"
+ 
+ !verbose 3      ; For WinMessages especially
+   !include "WinMessages.nsh"
+--- nsis-2.46.orig/Contrib/nsDialogs/InstallOptions.nsi.orig	2007-12-01 12:43:02.000000000 +0100
++++ nsis-2.46/Contrib/nsDialogs/InstallOptions.nsi	2011-04-27 09:38:06.000000000 +0200
+@@ -17,7 +17,7 @@
+ Function nsDialogsIO
+ 
+ 	InitPluginsDir
+-	File /oname=$PLUGINSDIR\io.ini "${NSISDIR}\Examples\InstallOptions\test.ini"
++	File /oname=$PLUGINSDIR\io.ini "..\InstallOptions\test.ini"
+ 
+ 	${If} ${Cmd} `MessageBox MB_ICONQUESTION|MB_YESNO|MB_DEFBUTTON2 "Test the right-to-left version?" IDYES`
+ 		WriteINIStr $PLUGINSDIR\io.ini Settings RTL 1

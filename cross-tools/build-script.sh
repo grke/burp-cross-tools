@@ -5,23 +5,23 @@
 
 set -e
 
-WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+readonly WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 . "$WORK_DIR"/../functions.sh
 
-binutils_ver="2.24"
-gcc_ver="4.7.4"
-gmp_ver="6.0.0"
-mingw_ver="v2.0.9"
-mpc_ver="1.0.2"
-mpfr_ver="3.1.2"
+readonly binutils_ver="2.24"
+readonly gcc_ver="4.7.4"
+readonly gmp_ver="6.0.0"
+readonly mingw_ver="v2.0.9"
+readonly mpc_ver="1.0.2"
+readonly mpfr_ver="3.1.2"
 
-binutils="binutils-$binutils_ver.tar.bz2"
-gcc="gcc-$gcc_ver.tar.bz2"
-gmp="gmp-${gmp_ver}a.tar.bz2"
-mingw="mingw-w64-$mingw_ver.tar.gz"
-mpc="mpc-$mpc_ver.tar.gz"
-mpfr="mpfr-$mpfr_ver.tar.bz2"
+readonly binutils="binutils-$binutils_ver.tar.bz2"
+readonly gcc="gcc-$gcc_ver.tar.bz2"
+readonly gmp="gmp-${gmp_ver}a.tar.bz2"
+readonly mingw="mingw-w64-$mingw_ver.tar.gz"
+readonly mpc="mpc-$mpc_ver.tar.gz"
+readonly mpfr="mpfr-$mpfr_ver.tar.bz2"
 
 maybe_download "$binutils" "https://ftp.gnu.org/gnu/binutils"
 maybe_download "$gcc"      "https://ftp.gnu.org/gnu/gcc/gcc-$gcc_ver"
@@ -30,17 +30,17 @@ maybe_download "$mingw"    "https://downloads.sourceforge.net/project/mingw-w64/
 maybe_download "$mpc"      "https://ftp.gnu.org/gnu/mpc"
 maybe_download "$mpfr"     "https://ftp.gnu.org/gnu/mpfr"
 
-uname_m="$(uname -m)"
-mingw_w64_i686_prefix="$WORK_DIR/mingw-w64-i686"
-mingw_w64_x86_64_prefix="$WORK_DIR/mingw-w64-x86_64"
-target_i686="i686-w64-mingw32"
-target_x86_64="x86_64-w64-mingw32"
-mpfr_prefix="$WORK_DIR/packages/gcc/packages/mpfr/mpfr-$mpfr_ver-$uname_m"
-mpc_prefix="$WORK_DIR/packages/gcc/packages/mpc/mpc-$mpc_ver-$uname_m"
-gmp_prefix="$WORK_DIR/packages/gcc/packages/gmp/gmp-$gmp_ver-$uname_m"
+readonly uname_m="$(uname -m)"
+readonly mingw_w64_i686_prefix="$WORK_DIR/mingw-w64-i686"
+readonly mingw_w64_x86_64_prefix="$WORK_DIR/mingw-w64-x86_64"
+readonly target_i686="i686-w64-mingw32"
+readonly target_x86_64="x86_64-w64-mingw32"
+readonly mpfr_prefix="$WORK_DIR/packages/gcc/packages/mpfr/mpfr-$mpfr_ver-$uname_m"
+readonly mpc_prefix="$WORK_DIR/packages/gcc/packages/mpc/mpc-$mpc_ver-$uname_m"
+readonly gmp_prefix="$WORK_DIR/packages/gcc/packages/gmp/gmp-$gmp_ver-$uname_m"
 
-cpu_count="$(cat /proc/cpuinfo | grep processor | wc -l)"
-build_type="$(sh $WORK_DIR/source/config.guess)"
+readonly cpu_count="$(cat /proc/cpuinfo | grep processor | wc -l)"
+readonly build_type="$(sh $WORK_DIR/source/config.guess)"
 [ -z "$build_type" ] && echo "no build_type" && exit 1
 
 function clear_build() {
@@ -199,9 +199,10 @@ function build_mingw_w64() {
 	make install
 }
 
-build_mingw_w64 "$target_i686" "$mingw_w64_i686_prefix" \
-  && build_mingw_w64 "$target_x86_64" "$mingw_w64_x86_64_prefix" \
-  && cd "$WORK_DIR" && rm -fr "build" "packages" \
-  && echo "MinGW-w64 has been built without errors." && exit 0
+build_mingw_w64 "$target_i686" "$mingw_w64_i686_prefix"
+build_mingw_w64 "$target_x86_64" "$mingw_w64_x86_64_prefix"
+cd "$WORK_DIR"
+rm -fr "build" "packages"
+echo "MinGW-w64 has been built without errors."
 
-exit 1
+exit 0

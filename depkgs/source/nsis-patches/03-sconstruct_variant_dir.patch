@@ -1,0 +1,80 @@
+Description: Use variant_dir instead of build_dir keyword in SConstruct file
+ The use of the build_dir keyword has been declared deprecated since
+ scons version 0.98. The variant_dir keyword should be used instead.
+Forwarded: http://sf.net/support/tracker.php?aid=3075573
+Author: Thomas Gaugler <thomas@dadie.net>
+
+diff -urd nsis-2.46-src.orig/SConstruct nsis-2.46-src/SConstruct
+--- nsis-2.46-src.orig/SConstruct	2010-09-25 17:08:49.000000000 +0200
++++ nsis-2.46-src/SConstruct	2010-09-25 17:27:37.000000000 +0200
+@@ -470,7 +470,7 @@
+ 
+ 	exports = { 'env' : env, 'compression' : compression, 'solid_compression' : solid }
+ 
+-	target = defenv.SConscript(dirs = 'Source/exehead', build_dir = build_dir, duplicate = False, exports = exports)
++	target = defenv.SConscript(dirs = 'Source/exehead', variant_dir = build_dir, duplicate = False, exports = exports)
+ 	env.SideEffect('%s/stub_%s.map' % (build_dir, stub), target)
+ 
+ 	env.DistributeStubs(target, names=compression+suffix)
+@@ -494,7 +494,7 @@
+ build_dir = '$BUILD_PREFIX/makensis'
+ exports = { 'env' : makensis_env }
+ 
+-makensis = defenv.SConscript(dirs = 'Source', build_dir = build_dir, duplicate = False, exports = exports)
++makensis = defenv.SConscript(dirs = 'Source', variant_dir = build_dir, duplicate = False, exports = exports)
+ 
+ makensis_env.SideEffect('%s/makensis.map' % build_dir, makensis)
+ 
+@@ -581,7 +581,7 @@
+ 	build_dir = '$BUILD_PREFIX/' + plugin
+ 	exports = {'BuildPlugin' : BuildPlugin, 'env' : plugin_env.Clone()}
+ 
+-	defenv.SConscript(dirs = path, build_dir = build_dir, duplicate = False, exports = exports)
++	defenv.SConscript(dirs = path, variant_dir = build_dir, duplicate = False, exports = exports)
+ 
+ ######################################################################
+ #######  Utilities                                                 ###
+@@ -651,7 +651,7 @@
+ 	build_dir = '$BUILD_PREFIX/' + util
+ 	exports = {'BuildUtil' : BuildUtil, 'BuildUtilEnv' : BuildUtilEnv, 'env' : util_env}
+ 
+-	defenv.SConscript(dirs = path, build_dir = build_dir, duplicate = False, exports = exports)
++	defenv.SConscript(dirs = path, variant_dir = build_dir, duplicate = False, exports = exports)
+ 
+ ######################################################################
+ #######  Documentation                                             ###
+@@ -659,7 +659,7 @@
+ 
+ halibut = defenv.SConscript(
+ 	dirs = 'Docs/src/bin/halibut',
+-	build_dir = '$BUILD_PREFIX/halibut',
++	variant_dir = '$BUILD_PREFIX/halibut',
+ 	duplicate = False,
+ 	exports = {'env' : defenv.Clone()}
+ )
+@@ -667,14 +667,14 @@
+ if defenv['CHMDOCS']:
+ 	defenv.SConscript(
+ 		dirs = 'Docs/src',
+-		build_dir = '$BUILD_PREFIX/Docs/chm',
++		variant_dir = '$BUILD_PREFIX/Docs/chm',
+ 		duplicate = False,
+ 		exports = {'halibut' : halibut, 'env' : defenv.Clone(), 'build_chm' : True}
+ 	)
+ else:
+ 	defenv.SConscript(
+ 		dirs = 'Docs/src',
+-		build_dir = '$BUILD_PREFIX/Docs/html',
++		variant_dir = '$BUILD_PREFIX/Docs/html',
+ 		duplicate = False,
+ 		exports = {'halibut' : halibut, 'env' : defenv.Clone(), 'build_chm' : False}
+ 	)
+@@ -720,7 +720,7 @@
+ 	dirs = 'Source/Tests',
+ 	duplicate = False,
+ 	exports = exports,
+-	build_dir = build_dir
++	variant_dir = build_dir
+ )
+ 
+ defenv.Ignore('$BUILD_PREFIX', '$BUILD_PREFIX/tests')

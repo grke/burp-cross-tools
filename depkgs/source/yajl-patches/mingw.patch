@@ -1,0 +1,122 @@
+diff -uNr lloyd-yajl-66cb08c/CMakeLists.txt lloyd-yajl-66cb08c.new/CMakeLists.txt
+--- lloyd-yajl-66cb08c/CMakeLists.txt	2014-03-19 04:58:29.000000000 +0000
++++ lloyd-yajl-66cb08c.new/CMakeLists.txt	2014-08-03 05:07:36.541523271 +0000
+@@ -29,9 +29,13 @@
+ SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+ 
+ IF (WIN32)
+-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
+   ADD_DEFINITIONS(-DWIN32)
+-  SET(linkFlags "/PDB:NONE /INCREMENTAL:NO /OPT:NOREF /OPT:NOICF")
++  IF(CMAKE_COMPILER_IS_GNUCC)
++    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
++  ELSE(CMAKE_COMPILER_IS_GNUCC)
++    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /W4")
++    SET(linkFlags "/PDB:NONE /INCREMENTAL:NO /OPT:NOREF /OPT:NOICF")
++  ENDIF(CMAKE_COMPILER_IS_GNUCC)
+   SET(CMAKE_EXE_LINKER_FLAGS    "${linkFlags}"
+       CACHE STRING "YAJL linker flags" FORCE)
+   SET(CMAKE_EXE_LINKER_FLAGS_DEBUG ""
+@@ -43,9 +47,14 @@
+   SET(CMAKE_MODULE_LINKER_FLAGS "${linkFlags}"
+       CACHE STRING "YAJL module linker flags" FORCE)
+ 
+-  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996 /wd4255 /wd4130 /wd4100 /wd4711")
+-  SET(CMAKE_C_FLAGS_DEBUG "/D DEBUG /Od /Z7")
+-  SET(CMAKE_C_FLAGS_RELEASE "/D NDEBUG /O2")
++  IF(CMAKE_COMPILER_IS_GNUCC)
++    SET(CMAKE_C_FLAGS_DEBUG "-DDEBUG -O0 -g")
++    SET(CMAKE_C_FLAGS_RELEASE "-DNDEBUG -O2")
++  ELSE(CMAKE_COMPILER_IS_GNUCC)
++    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} /wd4996 /wd4255 /wd4130 /wd4100 /wd4711")
++    SET(CMAKE_C_FLAGS_DEBUG "/D DEBUG /Od /Z7")
++    SET(CMAKE_C_FLAGS_RELEASE "/D NDEBUG /O2")
++  ENDIF(CMAKE_COMPILER_IS_GNUCC)
+ ELSE (WIN32)
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+   IF(CMAKE_COMPILER_IS_GNUCC)
+diff -uNr lloyd-yajl-66cb08c/configure lloyd-yajl-66cb08c.new/configure
+--- lloyd-yajl-66cb08c/configure	2014-03-19 04:58:29.000000000 +0000
++++ lloyd-yajl-66cb08c.new/configure	2014-08-03 05:25:23.309525329 +0000
+@@ -38,7 +38,7 @@
+ echo "== running CMake in build directory"
+ mkdir build || exit 1
+ cd build || exit 1
+-cmake -DCMAKE_INSTALL_PREFIX="$prefix" .. ||
++cmake -DCMAKE_INSTALL_PREFIX="$prefix" -DCMAKE_TOOLCHAIN_FILE="$TOOLCHAIN_FILE_PATH" .. ||
+ {
+     echo "The \"cmake\" program is required to configure yajl."
+     echo "It's available from most ports/packaging systems and http://cmake.org"
+diff -uNr lloyd-yajl-66cb08c/mingw-w64-i686.cmake lloyd-yajl-66cb08c.new/mingw-w64-i686.cmake
+--- lloyd-yajl-66cb08c/mingw-w64-i686.cmake	1970-01-01 00:00:00.000000000 +0000
++++ lloyd-yajl-66cb08c.new/mingw-w64-i686.cmake	2014-08-03 05:21:50.957524920 +0000
+@@ -0,0 +1,26 @@
++# the name of the target operating system
++SET(CMAKE_SYSTEM_NAME Windows)
++
++# Choose an appropriate compiler prefix
++
++# for 32 or 64 bits mingw-w64
++# see http://mingw-w64.sourceforge.net/
++set(COMPILER_PREFIX "BURP_COMPILER_PREFIX")
++#set(COMPILER_PREFIX "mingw-w64-x86_64")
++
++# which compilers to use for C and C++
++SET(CMAKE_RC_COMPILER ${COMPILER_PREFIX}windres)
++SET(CMAKE_C_COMPILER ${COMPILER_PREFIX}gcc)
++SET(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}g++)
++
++
++# here is the target environment located
++SET(USER_ROOT_PATH "BURP_DEPKGS")
++SET(CMAKE_FIND_ROOT_PATH  ${COMPILER_PREFIX} ${USER_ROOT_PATH}/${COMPILER_PREFIX})
++
++# adjust the default behaviour of the FIND_XXX() commands:
++# search headers and libraries in the target environment, search 
++# programs in the host environment
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+diff -uNr lloyd-yajl-66cb08c/mingw-w64-x86_64.cmake lloyd-yajl-66cb08c.new/Toolchain-cross-mingw64-linux.cmake
+--- lloyd-yajl-66cb08c/mingw-w64-x86_64.cmake	1970-01-01 00:00:00.000000000 +0000
++++ lloyd-yajl-66cb08c.new/mingw-w64-x86_64.cmake	2014-08-03 05:23:00.333525053 +0000
+@@ -0,0 +1,25 @@
++# the name of the target operating system
++SET(CMAKE_SYSTEM_NAME Windows)
++
++# Choose an appropriate compiler prefix
++
++# for 32 or 64 bits mingw-w64
++# see http://mingw-w64.sourceforge.net/
++set(COMPILER_PREFIX "BURP_COMPILER_PREFIX")
++
++# which compilers to use for C and C++
++SET(CMAKE_RC_COMPILER ${COMPILER_PREFIX}windres)
++SET(CMAKE_C_COMPILER ${COMPILER_PREFIX}gcc)
++SET(CMAKE_CXX_COMPILER ${COMPILER_PREFIX}g++)
++
++
++# here is the target environment located
++SET(USER_ROOT_PATH "BURP_DEPKGS")
++SET(CMAKE_FIND_ROOT_PATH  ${COMPILER_PREFIX} ${USER_ROOT_PATH}/${COMPILER_PREFIX})
++
++# adjust the default behaviour of the FIND_XXX() commands:
++# search headers and libraries in the target environment, search 
++# programs in the host environment
++set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
++set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
++set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+diff -ur lloyd-yajl-66cb08c/src/yajl_tree.c lloyd-yajl-66cb08c.new/src/yajl_tree.c
+--- lloyd-yajl-66cb08c/src/yajl_tree.c	2014-03-19 04:58:29.000000000 +0000
++++ lloyd-yajl-66cb08c.new/src/yajl_tree.c	2016-01-09 03:43:53.354326999 +0000
+@@ -25,10 +25,6 @@
+ 
+ #include "yajl_parser.h"
+ 
+-#if defined(_WIN32) || defined(WIN32)
+-#define snprintf sprintf_s
+-#endif
+-
+ #define STATUS_CONTINUE 1
+ #define STATUS_ABORT    0
+ 

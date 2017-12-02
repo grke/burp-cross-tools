@@ -1,0 +1,54 @@
+The following comes from the bacula instructions for cross compiling
+windows clients, and still applies to burp:
+
+-------------------------
+You need the header files from the Microsoft VSS SDK.  Unfortunately the SDK
+can only be downloaded and installed on a Windows system.  We do not have
+the right to distribute it, so you must download it yourself.
+You can find it on Microsoft's web-site at:
+
+http://www.microsoft.com/downloads/details.aspx?FamilyID=0b4f56e4-0ccc-4626-826a-ed2c4c95c871&DisplayLang=en
+
+If that link doesn't work then go to http://www.microsoft.com and search for
+
+        "download volume shadow copy service sdk"
+
+we are currently using version 7.2 released 8/3/2005 (a bit old, but it
+works).
+
+Normally the files will be installed in:
+
+        c:\Program Files\Microsoft\VSSSDK72
+-------------------------
+
+Additional instructions added by Graham Keeling:
+
+Create a gzipped tar file out of c:\Program Files\Microsoft\VSSSDK72\inc
+Call it 'vss.tar.gz' and put it into the depkgs 'src' directory.
+The contents of 'vss.tar.gz' should look like this:
+
+vss/
+vss/inc/
+vss/inc/WinXP/
+vss/inc/WinXP/vss.h
+vss/inc/WinXP/vsbackup.h
+vss/inc/WinXP/vswriter.h
+vss/inc/Win2003/
+vss/inc/Win2003/vscoordint.h
+vss/inc/Win2003/vdslun.idl
+vss/inc/Win2003/vss.h
+vss/inc/Win2003/vsmgmt.idl
+vss/inc/Win2003/vdslun.h
+vss/inc/Win2003/vsmgmt.h
+vss/inc/Win2003/vsprov.h
+vss/inc/Win2003/vsswprv.h
+vss/inc/Win2003/vsbackup.h
+vss/inc/Win2003/vscoordint.idl
+vss/inc/Win2003/vsprov.idl
+vss/inc/Win2003/vswriter.h
+vss/inc/Win2003/vss.idl
+vss/inc/Win2003/vsswprv.idl
+
+NOTE: At some point, the vss directory that you get, as described above,
+changed so that the paths are all lower case. But the version number 7.2 seems
+to have stayed the same.

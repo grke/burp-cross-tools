@@ -1,0 +1,9 @@
+diff -ur scons-2.3.5/script/scons scons-2.3.5.new/script/scons
+--- scons-2.3.5/script/scons	2015-06-20 18:18:37.000000000 +0000
++++ scons-2.3.5.new/script/scons	2015-07-12 09:14:08.508966776 +0000
+@@ -1,4 +1,4 @@
+-#! /usr/bin/env python
++#! /usr/bin/env python2
+ #
+ # SCons - a Software Constructor
+ #

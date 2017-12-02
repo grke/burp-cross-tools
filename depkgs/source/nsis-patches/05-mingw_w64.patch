@@ -1,0 +1,38 @@
+Description: Allow building with mingw-w64
+ This patch enables building NSIS with the mingw-w64 compiler.
+Author: Thomas Gaugler <thomas@dadie.net>, Stephen Kitt <steve@sk2.org>
+
+--- nsis-2.46.orig/SCons/Tools/crossmingw.py	2009-01-11 10:48:07.000000000 +0100
++++ nsis-2.46/SCons/Tools/crossmingw.py	2011-04-27 14:30:41.000000000 +0200
+@@ -61,6 +61,11 @@
+ """)
+ 
+ def find(env):
++    # Explicitly specified toolchain to build Windows executables
++    # takes predominance.
++    prefix = SCons.Script.ARGUMENTS.get('XGCC_W32_PREFIX', None)
++    if prefix:
++        prefixes.insert(0, prefix)
+     for prefix in prefixes:
+         # First search in the SCons path and then the OS path:
+         if env.WhereIs(prefix + 'gcc') or SCons.Util.WhereIs(prefix + 'gcc'):
+--- nsis-2.46.orig/Contrib/InstallOptions/InstallerOptions.cpp
++++ nsis-2.46/Contrib/InstallOptions/InstallerOptions.cpp
+@@ -14,6 +14,8 @@
+ #include "resource.h"
+ #include "shellapi.h"
+ 
++#include <algorithm>
++
+ #include <nsis/pluginapi.h> // nsis plugin
+ 
+ // Use for functions only called from one place to possibly reduce some code
+@@ -759,7 +761,7 @@
+       DrawText(lpdis->hDC, pField->pszText, -1, &rc, DT_VCENTER | DT_WORDBREAK | DT_CALCRECT);
+ 
+       // Make some more room so the focus rect won't cut letters off
+-      rc.right = min(rc.right + 2, lpdis->rcItem.right);
++      rc.right = std::min(rc.right + 2, lpdis->rcItem.right);
+ 
+       // Move rect to right if in RTL mode
+       if (bRTL)

@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+#
+# By Graham Keeling.
+
+set -e
+
+WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+. "$WORK_DIR"/../functions.sh
+
+readonly BASE="$PWD"/..
+readonly CROSS="$BASE"/../burp-cross-tools
+readonly SRCDIR="$BASE"/source
+readonly ORIGPATH=$PATH
+
+# File name was: lloyd-yajl-2.1.0-0-ga0ecdde.tar.gz
+readonly yajl=lloyd-yajl-66cb08c
+readonly zlib=zlib-1.2.11
+readonly pcre=pcre-8.41
+readonly stab2cv=stab2cv-0.1
+readonly scons=scons-2.3.5
+readonly nsis=nsis-2.46
+readonly openssl=openssl-1.1.0f
+readonly librsync=librsync-1.0.0
+readonly check=check-0.10.0
+
+function unpack()
+{
+	local name="$1"
+	cd "$SRCDIR"
+	rm -rf "$name"
+	[ -f "$name".tar.gz ] && tar -zxf "$name".tar.gz
+	[ -f "$name".tar.bz2 ] && tar -jxf "$name".tar.bz2
+	[ -f "$name".zip ] && unzip "$name".zip
+	cd "$name"
+}
+
+function apply_patches()
+{
+	local name="$1"
+	for i in "$SRCDIR/$name"-patches/*.patch ; do
+		patch -Np1 < "$i"
+	done
+}
+
+function cleanup()
+{
+	local name="$1"
+	cd "$SRCDIR"
+	rm -rf "$name"
+}
+
+function do_build()
+{
+	TGT="$1"
+	HOST="$2"
+	SSLSUFFIX="$3"
+	DEPKGS="$BASE/$TGT"
+	if [ -z "$TGT" -o -z "$HOST" ] ; then
+		echo "do_build called with not enough parameters"
+		fail
+	fi
+	COMPPREFIX="$CROSS/$TGT/bin/$HOST"-
+	BINARY_PATH="$DEPKGS/bin"
+	INCLUDE_PATH="$DEPKGS/include"
+	LIBRARY_PATH="$DEPKGS/lib"
+	MAN_PATH="$DEPKGS/man"
+	PATH="$CROSS/$TGT"/bin:$ORIGPATH
+
+	rm -rf "$DEPKGS"
+	mkdir -p "$BINARY_PATH"
+	mkdir -p "$LIBRARY_PATH"
+	mkdir -p "$INCLUDE_PATH"
+	mkdir -p "$MAN_PATH"
+
+	echo "unpack vss"
+	cd "$DEPKGS"
+	tar -zxf "$SRCDIR/vss.tar.gz"
+	cd "vss"
+	# Seems that the vss directory from Microsoft used to have upper case
+	# components, but now has lower case. Do some conversion, just in case.
+	find -type d | while read d ; do
+		l=$(echo "$d" | tr '[:upper:]' '[:lower:]')
+		[ "$d" != "$l" ] || continue
+		mv "$d" "$l"
+	done
+	apply_patches vss
+
+	echo "build check"
+	unpack "$check"
+	./configure CC_FOR_BUILD=gcc \
+		CXX_FOR_BUILD=g++ \
+		--host="$HOST" \
+		--prefix="$DEPKGS"
+	make PREFIX="$DEPKGS" install
+	cleanup "$check"
+
+	echo "build yajl"
+	unpack "$yajl"
+	apply_patches yajl
+	sed -i -e "s#BURP_COMPILER_PREFIX#$COMPPREFIX#g" "$TGT.cmake"
+	sed -i -e "s#BURP_DEPKGS#$DEPKGS#g" "$TGT.cmake"
+	TOOLCHAIN_FILE_PATH="$TGT.cmake" ./configure -p "$DEPKGS"
+	make distro
+	make install
+	cp "$LIBRARY_PATH"/libyajl.dll "$BINARY_PATH"
+	cleanup "$yajl"
+
+	echo "build zlib"
+	unpack "$zlib"
+	make -f win32/Makefile.gcc PREFIX="$COMPPREFIX" all
+	make -f win32/Makefile.gcc PREFIX="$COMPPREFIX" \
+		INCLUDE_PATH="$INCLUDE_PATH" \
+		LIBRARY_PATH="$LIBRARY_PATH" \
+		BINARY_PATH="$BINARY_PATH" \
+		SHARED_MODE=1 \
+		install
+	cleanup "$zlib"
+
+	echo "build pcre"
+	unpack "$pcre"
+	./configure CC_FOR_BUILD=gcc \
+		CXX_FOR_BUILD=g++ \
+		--host="$HOST" \
+		--prefix="$DEPKGS" \
+		--enable-utf8 \
+		--enable-unicode-properties
+	make PREFIX="$DEPKGS" all
+	make PREFIX="$DEPKGS" install
+	cleanup "$pcre"
+
+	echo "build stab2cv"
+	unpack "$stab2cv"
+	./configure --prefix="$DEPKGS"/tools
+	# No idea why this is now necessary for me.
+	# Maybe it is because I am using a different version of
+	# autoconf/automake than before?
+	echo "#include <sys/types.h>" >> src/PEExecutable.h
+	echo "#include <unistd.h>" >> src/PEExecutable.h
+	make
+	make install
+	cleanup "$stab2cv"
+
+	echo "install scons"
+	unpack "$scons"
+	apply_patches scons
+	python2 setup.py install --prefix="$DEPKGS"/scons
+	cleanup "$scons"
+
+	echo "build nsis"
+	unpack "$nsis"
+	rm -rf "$DEPKGS"/nsis
+	cd "$SRCDIR"
+	mv "$nsis" "$DEPKGS"/nsis
+	unpack "$nsis"-src
+	apply_patches nsis
+	"$DEPKGS"/scons/bin/scons SKIPSTUBS=all SKIPPLUGINS=all \
+		SKIPUTILS=all SKIPMISC=all NSIS_CONFIG_LOG=yes \
+		XGCC_W32_PREFIX="$COMPPREFIX" \
+		PREFIX="$DEPKGS"/nsis PREFIX_BIN="$DEPKGS"/nsis/Bin \
+		PREFIX_CONF="$DEPKGS"/nsis PREFIX_DATA="$DEPKGS"/nsis \
+		PREFIX_DOC="$DEPKGS"/nsis/Docs
+	cp -p build/release/makensis/makensis "$DEPKGS"/nsis
+	cleanup "$nsis"-src
+
+	echo "build openssl"
+	unpack "$openssl"
+	./Configure --prefix="$DEPKGS" \
+		shared zlib-dynamic \
+		threads \
+		--with-zlib-include="$INCLUDE_PATH" \
+		--cross-compile-prefix="$COMPPREFIX" "$SSLSUFFIX"
+	make all
+	make install_sw
+	cleanup "$openssl"
+
+	echo "build librsync"
+	unpack "$librsync"
+	apply_patches librsync
+	./autogen.sh
+	./configure --host="$HOST" --prefix="$DEPKGS"
+	make
+	make install
+	cleanup "$librsync"
+
+	echo "Finished OK"
+}
+
+do_build mingw-w64-i686 i686-w64-mingw32 mingw
+do_build mingw-w64-x86_64 x86_64-w64-mingw32 mingw64

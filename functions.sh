@@ -30,14 +30,19 @@ function maybe_download() {
 
 function extract() {
 	local archive_name="$1"
-	local archive_type=
 	local path="$WORK_DIR/source/$archive_name"
 	if [ ! -f "$path" ] ; then
 		echo "$path does not exist" 1>&2
 		exit 1
 	fi
-	[[ "$path" =~ ".bz2$" ]] && archive_type="j"
-	[[ "$path" =~ ".gz$" ]] && archive_type="z"
-	[[ "$path" =~ ".xz$" ]] && archive_type="J"
-	tar -xv"$archive_type"f "$path"
+
+	echo "Extracting $path"
+
+	[[ "$path" =~ bz2$ ]] && tar -jxf "$path" && return 0
+	[[ "$path" =~ gz$ ]] && tar -zxf "$path" && return 0
+	[[ "$path" =~ xz$ ]] && tar -Jxf "$path" && return 0
+	[[ "$path" =~ zip$ ]] && unzip "$path" && return 0
+
+	echo "Unable to extract $path"
+	return 1
 }
