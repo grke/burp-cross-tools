@@ -24,7 +24,7 @@ Normally the files will be installed in:
 Additional instructions added by Graham Keeling:
 
 Create a gzipped tar file out of c:\Program Files\Microsoft\VSSSDK72\inc
-Call it 'vss.tar.gz' and put it into the depkgs 'src' directory.
+Call it 'vss.tar.gz' and put it into the 'depkgs/source' directory.
 The contents of 'vss.tar.gz' should look like this:
 
 vss/

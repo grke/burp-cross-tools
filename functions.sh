@@ -18,8 +18,8 @@ function maybe_download() {
 
 	check_md5sum "$package" && return 0
 
-	echo "Downloading from $url/$package"
-	wget -O "$WORK_DIR/source/$package" "$url/$package"
+	echo "Downloading from $url"
+	wget -O "$WORK_DIR/source/$package" "$url"
 
 	check_md5sum "$package" && return 0
 

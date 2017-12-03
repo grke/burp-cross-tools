@@ -1,0 +1,67 @@
+How to build cross-tools
+------------------------
+
+You need to make sure you have all the right development tools installed.
+
+This command will probably do the right thing on debian/ubuntu:
+  apt-get install gcc g++ make flex bison patch yasm wget
+
+This  command will probably do the right thing on RHEL/CentOS/Fedora:
+  yum install gcc gcc-c++ make flex bison path yasm wget
+
+Stand in the top level directory and run the build script
+with the command:
+  ./cross-tools/build-script.sh
+
+The script will download all the necessary source packages.
+All being well, it will install everything into the cross-tools directory.
+
+cross-tools/mingw-w64-i686:   cross compiler for 32bit Windows
+cross-tools/mingw-w64-x86_64: cross compiler for 64bit Windows
+
+
+
+How to build depkgs
+-------------------
+
+This how-to assumes that you have already installed burp-cross-tools.
+
+You also need to get a copy of the VSS header files. See README.VSS.
+Additionally, 'cmake' is needed.
+
+On Debian/Ubuntu, you can run:
+  apt-get install cmake
+
+On RHEL/CentOS/Fedora, you can run:
+  yum install cmake
+
+Furthermore, autoconf and libtool are needed.
+
+
+On Debian/Ubuntu, you can run:
+  apt-get install autoconf libtool
+
+On RHEL/CentOS/Fedora, you can run:
+  yum install autoconf libtool libstdc++-static unzip
+
+Once done, stand in the top level directory and run the build-script with the
+command:
+  ./depkgs/build-script.sh
+
+All being well, it will install everything into the depkgs directory.
+
+  depkgs/mingw-w64-i686:   dependencies for 32-bit Windows
+  depkgs/mingw-w64-x86_64: dependencies for 64-bit Windows
+
+
+
+How to build everything at once
+-------------------------------
+
+Install all the requirements above.
+
+Stand in the top level directory and run the top level build-script with the
+command:
+  ./build-script.sh
+
+This will run the build-script for cross-tools and depkgs in turn.
