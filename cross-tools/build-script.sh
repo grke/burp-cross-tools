@@ -4,28 +4,32 @@
 # by Kyle Schwarz. Modified by Graham Keeling.
 
 set -e
+set -x
 
 readonly WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 . "$WORK_DIR"/../functions.sh
 
-readonly binutils_ver="2.24"
-readonly gcc_ver="4.7.4"
-readonly gmp_ver="6.0.0"
-readonly mingw_ver="v2.0.9"
-readonly mpc_ver="1.0.2"
-readonly mpfr_ver="3.1.2"
+readonly ver_binutils="2.29.1"
+readonly ver_gcc="7.3.0"
+readonly ver_gmp="6.1.2"
+readonly ver_isl="0.18"
+readonly ver_mingw="v5.0.3"
+readonly ver_mpc="1.1.0"
+readonly ver_mpfr="4.0.1"
 
-readonly binutils="binutils-$binutils_ver.tar.bz2"
-readonly gcc="gcc-$gcc_ver.tar.bz2"
-readonly gmp="gmp-${gmp_ver}a.tar.bz2"
-readonly mingw="mingw-w64-$mingw_ver.tar.gz"
-readonly mpc="mpc-$mpc_ver.tar.gz"
-readonly mpfr="mpfr-$mpfr_ver.tar.bz2"
+readonly binutils="binutils-$ver_binutils.tar.xz"
+readonly gcc="gcc-$ver_gcc.tar.xz"
+readonly gmp="gmp-$ver_gmp.tar.xz"
+readonly isl="isl-$ver_isl.tar.xz"
+readonly mingw="mingw-w64-$ver_mingw.tar.bz2"
+readonly mpc="mpc-$ver_mpc.tar.gz"
+readonly mpfr="mpfr-$ver_mpfr.tar.xz"
 
 maybe_download "$binutils" "https://ftp.gnu.org/gnu/binutils/$binutils"
-maybe_download "$gcc"      "https://ftp.gnu.org/gnu/gcc/gcc-$gcc_ver/$gcc"
+maybe_download "$gcc"      "https://ftp.gnu.org/gnu/gcc/gcc-$ver_gcc/$gcc"
 maybe_download "$gmp"      "https://ftp.gnu.org/gnu/gmp/$gmp"
+maybe_download "$isl"      "http://isl.gforge.inria.fr/$isl"
 maybe_download "$mingw"    "https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/$mingw"
 maybe_download "$mpc"      "https://ftp.gnu.org/gnu/mpc/$mpc"
 maybe_download "$mpfr"     "https://ftp.gnu.org/gnu/mpfr/$mpfr"
@@ -35,9 +39,9 @@ readonly mingw_w64_i686_prefix="$WORK_DIR/mingw-w64-i686"
 readonly mingw_w64_x86_64_prefix="$WORK_DIR/mingw-w64-x86_64"
 readonly target_i686="i686-w64-mingw32"
 readonly target_x86_64="x86_64-w64-mingw32"
-readonly mpfr_prefix="$WORK_DIR/packages/gcc/packages/mpfr/mpfr-$mpfr_ver-$uname_m"
-readonly mpc_prefix="$WORK_DIR/packages/gcc/packages/mpc/mpc-$mpc_ver-$uname_m"
-readonly gmp_prefix="$WORK_DIR/packages/gcc/packages/gmp/gmp-$gmp_ver-$uname_m"
+readonly mpfr_prefix="$WORK_DIR/packages/gcc/packages/mpfr/mpfr-$ver_mpfr-$uname_m"
+readonly mpc_prefix="$WORK_DIR/packages/gcc/packages/mpc/mpc-$ver_mpc-$uname_m"
+readonly gmp_prefix="$WORK_DIR/packages/gcc/packages/gmp/gmp-$ver_gmp-$uname_m"
 
 readonly cpu_count="$(cat /proc/cpuinfo | grep processor | wc -l)"
 readonly build_type="$(sh $WORK_DIR/source/config.guess)"
@@ -48,62 +52,6 @@ function clear_build() {
 	rm -frv "build"
 	mkdir -p "build"
 	cd "build"
-}
-
-function build_gmp() {
-	cd "gmp"
-	mkdir -p "build" "source"
-	cd "source"
-	extract "$gmp"
-	if [[ ! -d "$gmp_prefix" ]]; then
-	    clear_build
-	    CC=gcc "../source/gmp-$gmp_ver/configure" \
-		--build="$build_type" \
-		--prefix="$gmp_prefix" \
-		--disable-shared \
-		--enable-static \
-		--enable-cxx \
-		CPPFLAGS=-fexceptions
-	    make -j "$cpu_count"
-	    make install
-	fi
-}
-
-function build_mpfr() {
-	cd "../../mpfr"
-	mkdir -p "build" "source"
-	cd "source"
-	extract "$mpfr"
-	if [[ ! -d "$mpfr_prefix" ]]; then
-	    clear_build
-	    CC=gcc "../source/mpfr-$mpfr_ver/configure" \
-			--build="$build_type" \
-			--prefix="$mpfr_prefix" \
-			--disable-shared \
-			--enable-static \
-			--with-gmp="$gmp_prefix"
-	    make -j "$cpu_count"
-	    make install
-	fi
-}
-
-function build_mpc() {
-	cd "../../mpc"
-	mkdir -p "build" "source"
-	cd "source"
-	extract "$mpc"
-	if [[ ! -d "$mpc_prefix" ]]; then
-	    clear_build
-	    CC=gcc "../source/mpc-$mpc_ver/configure" \
-		--build="$build_type" \
-		--prefix="$mpc_prefix" \
-		--with-gmp="$gmp_prefix" \
-		--with-mpfr="$mpfr_prefix" \
-		--disable-shared \
-		--enable-static
-	    make -j "$cpu_count"
-	    make install
-	fi
 }
 
 function build_mingw_w64() {
@@ -120,10 +68,13 @@ function build_mingw_w64() {
 	mkdir -p "build" "source"
 	cd "source"
 
+	export PATH="$mingw_w64_prefix/bin:$PATH"
+	rm -rf "$mingw_w64_prefix"
+
 	extract "$binutils"
 
 	clear_build
-	CC=gcc "../source/binutils-$binutils_ver/configure" \
+	"../source/binutils-$ver_binutils/configure" \
 		--build="$build_type" \
 		--target="$mingw_w64_target" \
 		--prefix="$mingw_w64_prefix" \
@@ -140,66 +91,64 @@ function build_mingw_w64() {
 
 	extract "$mingw"
 
-	export PATH="$PATH:$mingw_w64_prefix/bin"
 	clear_build
 	rm -frv "headers" "crt"
 	mkdir -p "headers" "crt"
 	cd "headers"
 
-	"../../source/mingw-w64-$mingw_ver/mingw-w64-headers/configure" \
+	"../../source/mingw-w64-$ver_mingw/mingw-w64-headers/configure" \
 		--build="$build_type" \
-		--prefix="$mingw_w64_prefix" \
+		--prefix="$mingw_w64_prefix/$mingw_w64_target" \
 		--host="$mingw_w64_target" \
 		--enable-sdk=all
 	make install
 	cd "$mingw_w64_prefix"
 	ln -s "./$mingw_w64_target" "./mingw"
+
 	cd "../packages/gcc"
 	mkdir -p "build" "source" "packages"
-	cd "packages"
-	mkdir -p "gmp" "mpfr" "mpc"
 
-	build_gmp
-	build_mpfr
-	build_mpc
-
-	# Build GCC (gcc only)
-	cd "../../../source"
+	cd "source"
 	extract "$gcc"
+	cd "gcc-$ver_gcc"
+	pwd
+	patch -Np1 < ../../../../source/gcc.patch
+	extract "$gmp" && mv "gmp-$ver_gmp" gmp
+	extract "$isl" && mv "isl-$ver_isl" isl
+	extract "$mpc" && mv "mpc-$ver_mpc" mpc
+	extract "$mpfr" && mv "mpfr-$ver_mpfr" mpfr
+	cd ..
 
 	clear_build
-	CC=gcc LDFLAGS="-L$gmp_prefix/lib" "../source/gcc-$gcc_ver/configure" \
+	"../source/gcc-$ver_gcc/configure" \
 		--build="$build_type" \
 		--target="$mingw_w64_target" \
 		--prefix="$mingw_w64_prefix" \
 		--disable-multilib \
 		--with-sysroot="$mingw_w64_prefix" \
-		--with-mpc="$mpc_prefix" \
-		--with-mpfr="$mpfr_prefix" \
-		--with-gmp="$gmp_prefix" \
 		--with-host-libstdcxx="-lstdc++ -lsupc++" \
-		--enable-languages="c,c++," \
+		--enable-languages="c,c++" \
 		--enable-fully-dynamic-string
 	make -j "$cpu_count" all-gcc
 	make install-gcc
 
-	# Build mingw-w64 CRT
 	cd "$WORK_DIR/packages/mingw64/build/crt"
-	"../../source/mingw-w64-$mingw_ver/mingw-w64-crt/configure" \
+	"../../source/mingw-w64-$ver_mingw/mingw-w64-crt/configure" \
 		--build="$build_type" \
 		--host="$mingw_w64_target" \
-		--prefix="$mingw_w64_prefix" \
-		--with-sysroot="$mingw_w64_prefix"
+		--prefix="$mingw_w64_prefix/$mingw_w64_target" \
+		--with-sysroot="$mingw_w64_prefix/$mingw_w64_target"
 	make -j "$cpu_count"
 	make install
 
-	# Build GCC
 	cd "$WORK_DIR/packages/gcc/build"
 	make -j "$cpu_count"
 	make install
 }
 
+orig_path="$PATH"
 build_mingw_w64 "$target_i686" "$mingw_w64_i686_prefix"
+export PATH="$orig_path"
 build_mingw_w64 "$target_x86_64" "$mingw_w64_x86_64_prefix"
 cd "$WORK_DIR"
 rm -fr "build" "packages"

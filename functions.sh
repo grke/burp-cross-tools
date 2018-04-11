@@ -2,12 +2,13 @@ function check_md5sum() {
 	local package="$1"
 
 	cd "$WORK_DIR/source"
-	if md5sum -c $package.md5sum ; then
+	if md5sum -c "$package.md5sum" ; then
 		echo "$package md5sum is correct."
 		cd -
 		return 0
 	fi
 	echo "$package md5sum is incorrect."
+	md5sum "$package"
 	cd -
 	return 1
 }
