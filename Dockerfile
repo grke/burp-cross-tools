@@ -20,7 +20,7 @@ RUN  \
 RUN \
 	apt-get update \
 	&& apt-get install -y pkg-config check librsync-dev \
-		libssl-dev uthash-dev libyajl-dev \
+		libssl-dev uthash-dev libyajl-dev lcov \
 	&& rm -rf /var/lib/apt/lists/*
 
 EXPOSE 4971
