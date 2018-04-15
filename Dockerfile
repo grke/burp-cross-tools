@@ -21,7 +21,7 @@ RUN \
 	apt-get update \
 	&& apt-get install -y pkg-config check librsync-dev \
 		libssl-dev uthash-dev libyajl-dev libacl1-dev libncurses-dev \
-		lcov \
+		lcov openssh-client \
 	&& rm -rf /var/lib/apt/lists/*
 
 EXPOSE 4971
