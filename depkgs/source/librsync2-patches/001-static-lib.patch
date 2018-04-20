@@ -1,0 +1,11 @@
+--- librsync-2.0.1/CMakeLists.txt       2017-10-17 03:45:57.000000000 +0200
++++ librsync-2.0.1-new/CMakeLists.txt    2018-02-26 21:42:56.753923100 +0100
+@@ -316,7 +316,7 @@
+     src/whole.c
+     ${blake2_SRCS})
+
+-add_library(rsync SHARED ${rsync_LIB_SRCS})
++add_library(rsync STATIC ${rsync_LIB_SRCS})
+ target_link_libraries(rsync ${blake2_LIBS})
+
+ # Optionally link zlib and bzip2 if
