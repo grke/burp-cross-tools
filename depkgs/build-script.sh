@@ -11,8 +11,6 @@ readonly SRCDIR="$WORK_DIR"/source
 readonly ORIGPATH=$PATH
 
 readonly check_ver=0.10.0
-# Both v1.0.0 and v2.0.2 can work
-#readonly librsync_ver=1.0.0
 readonly librsync_ver=2.0.2
 readonly nsis_ver=2.46
 readonly openssl_ver=1.1.0g
@@ -78,6 +76,8 @@ function do_build() {
 	mkdir -p "$LIBRARY_PATH"
 	mkdir -p "$INCLUDE_PATH"
 	mkdir -p "$MAN_PATH"
+
+	cp -v "$SRCDIR"/uthash.h "$INCLUDE_PATH"
 
 	echo "unpack vss"
 	cd "$DEPKGS"
@@ -205,48 +205,27 @@ function do_build() {
 	make install_sw
 	cleanup "openssl-$openssl_ver"
 
-	if [ "$librsync_ver" == "1.0.0" ]; then
-		# Build instructions for librsync 1.0.0
-		echo "build librsync $librsync_ver"
-		cd "$SRCDIR"
-		cleanup "librsync-$librsync_ver"
-		extract "$librsync"
-		cd "librsync-$librsync_ver"
-		apply_patches librsync
-		./autogen.sh
-		./configure --host="$HOST" --prefix="$DEPKGS"
-		make
-		make install
-		cleanup "librsync-$librsync_ver"
+	echo "build librsync $librsync_ver"
+	cd "$SRCDIR"
+	cleanup "librsync-$librsync_ver"
+	extract "$librsync"
+	cd "librsync-$librsync_ver"
+	apply_patches librsync2
 
-		echo "Finished OK"
-	elif [ "$librsync_ver" == "2.0.2" ]; then
-		#Build instructions for librsync 2.0.2
-		echo "build librsync $librsync_ver"
+	# Changing compiler paths on the fly here
+	sed "s#\[CROSS-TOOLS-PATH\]#${CROSS}#g" ${SRCDIR}/librsync2-patches/toolchain.cmake > ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
+	sed -i "s#\[TARGET-ARCH\]#${TGT}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
+	sed -i "s#\[HOST-ARCH\]#${HOST}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
 
-		cd "$SRCDIR"
-		cleanup "librsync-$librsync_ver"
-		extract "$librsync"
-		cd "librsync-$librsync_ver"
-		apply_patches librsync2
-
-		# Changing compiler paths on the fly here
-		sed "s#\[CROSS-TOOLS-PATH\]#${CROSS}#g" ${SRCDIR}/librsync2-patches/toolchain.cmake > ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-		sed -i "s#\[TARGET-ARCH\]#${TGT}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-		sed -i "s#\[HOST-ARCH\]#${HOST}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-
-		cmake -DBUILD_RDIFF=OFF -DCMAKE_INSTALL_PREFIX="$DEPKGS" -DCMAKE_PREFIX_PATH="$DEPKGS" -DCMAKE_INSTALL_LIBDIR="$LIBRARY_PATH" -DENABLE_COMPRESSION=OFF -DCMAKE_BUILD_TYPE=Release \
+	cmake -DBUILD_RDIFF=OFF -DCMAKE_INSTALL_PREFIX="$DEPKGS" -DCMAKE_PREFIX_PATH="$DEPKGS" -DCMAKE_INSTALL_LIBDIR="$LIBRARY_PATH" -DENABLE_COMPRESSION=OFF -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_DISABLE_FIND_PACKAGE_POPT=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_libb2=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_ZLIB=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_BZip2=TRUE \
 		-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=TRUE \
 		-DCMAKE_TOOLCHAIN_FILE=${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-		make
-		make install
-		cleanup "librsync-$librsync_ver"
+	make
+	make install
+	cleanup "librsync-$librsync_ver"
 
-		echo "Finished OK"
-	else
-		echo "No valid librsync version set."
-	fi
+	echo "Finished OK"
 }
 
 do_build mingw-w64-i686 i686-w64-mingw32 mingw
