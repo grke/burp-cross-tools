@@ -26,6 +26,7 @@ RUN \
 
 RUN \
 	apt-get update \
-	&& apt-get install valgrind
+	&& apt-get install valgrind \
+	&& rm -rf /var/lib/apt/lists/*
 
 EXPOSE 4971
