@@ -13,8 +13,8 @@ readonly ORIGPATH=$PATH
 readonly check_ver=0.10.0
 readonly librsync_ver=2.0.2
 readonly nsis_ver=2.46
-readonly openssl_ver=1.1.1c
-readonly pcre_ver=8.41
+readonly openssl_ver=1.1.1d
+readonly pcre_ver=8.43
 readonly scons_ver=2.3.5
 readonly stab2cv_ver=0.1
 readonly yajl_ver=2.1.0
@@ -210,17 +210,17 @@ function do_build() {
 	cleanup "librsync-$librsync_ver"
 	extract "$librsync"
 	cd "librsync-$librsync_ver"
-	apply_patches librsync2
+	apply_patches librsync
 
 	# Changing compiler paths on the fly here
-	sed "s#\[CROSS-TOOLS-PATH\]#${CROSS}#g" ${SRCDIR}/librsync2-patches/toolchain.cmake > ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-	sed -i "s#\[TARGET-ARCH\]#${TGT}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
-	sed -i "s#\[HOST-ARCH\]#${HOST}#g" ${SRCDIR}/librsync2-patches/toolchain_temp.cmake
+	sed "s#\[CROSS-TOOLS-PATH\]#${CROSS}#g" ${SRCDIR}/librsync-patches/toolchain.cmake > ${SRCDIR}/librsync-patches/toolchain_temp.cmake
+	sed -i "s#\[TARGET-ARCH\]#${TGT}#g" ${SRCDIR}/librsync-patches/toolchain_temp.cmake
+	sed -i "s#\[HOST-ARCH\]#${HOST}#g" ${SRCDIR}/librsync-patches/toolchain_temp.cmake
 
 	cmake -DBUILD_RDIFF=OFF -DCMAKE_INSTALL_PREFIX="$DEPKGS" -DCMAKE_PREFIX_PATH="$DEPKGS" -DCMAKE_INSTALL_LIBDIR="$LIBRARY_PATH" -DENABLE_COMPRESSION=OFF -DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_DISABLE_FIND_PACKAGE_POPT=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_libb2=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_ZLIB=TRUE -DCMAKE_DISABLE_FIND_PACKAGE_BZip2=TRUE \
 		-DCMAKE_DISABLE_FIND_PACKAGE_Doxygen=TRUE \
-		-DCMAKE_TOOLCHAIN_FILE=${SRCDIR}/librsync2-patches/toolchain_temp.cmake
+		-DCMAKE_TOOLCHAIN_FILE=${SRCDIR}/librsync-patches/toolchain_temp.cmake
 	make
 	make install
 	cleanup "librsync-$librsync_ver"
