@@ -3,34 +3,40 @@ SET(CMAKE_SYSTEM_NAME Windows)
 SET(CMAKE-SYSTEM_VERSION 1)
 
 # Mingw architecture default is 64-bit
-# To override: 
+# To override:
 #   $ export MINGW_ARCH=32
 if(DEFINED ENV{MINGW_ARCH})
-	set(MINGW_ARCH              "$ENV{MINGW_ARCH}")
+        set(MINGW_ARCH              "$ENV{MINGW_ARCH}")
 else()
-	set(MINGW_ARCH              "64")
+        set(MINGW_ARCH              "64")
 endif()
+
 
 if(${MINGW_ARCH} STREQUAL "32")
         set(CMAKE_SYSTEM_PROCESSOR  "i686")
 elseif(${MINGW_ARCH} STREQUAL "64")
         set(CMAKE_SYSTEM_PROCESSOR  "x86_64")
 else()
-        message(FATAL_ERROR         "Unknown system architecture specified") 
+        message(FATAL_ERROR         "Unknown system architecture specified")
 endif()
 
 # Path to mingw
-set(MINGW_PREFIX                    "[CROSS-TOOLS-PATH]/[TARGET-ARCH]")
-#set(MINGW_PREFIX                    "[CROSS-TOOLS-PATH]/mingw-w64-${CMAKE_SYSTEM_PROCESSOR}")
+#set(MINGW_PREFIX                    "/opt/install/burp-cross-tools/cross-tools/mingw-w64-i686")
 # Linux mingw requires explicitly defined tools to prevent clash with native system tools
-set(MINGW_TOOL_PREFIX               ${MINGW_PREFIX}/bin/[HOST-ARCH]-)
-#set(MINGW_TOOL_PREFIX               ${MINGW_PREFIX}/bin/${CMAKE_SYSTEM_PROCESSOR}-w64-mingw32-)
+if(${MINGW_ARCH} STREQUAL "32")
+        set(MINGW_TOOL_PREFIX               ${MINGW_PREFIX}/bin/i686-w64-mingw32-)
+elseif(${MINGW_ARCH} STREQUAL "64")
+        set(MINGW_TOOL_PREFIX               ${MINGW_PREFIX}/bin/x86_64-w64-mingw32-)
+else()
+        message(FATAL_ERROR         "Unknown system architecture specified")
+endif()
+
 
 # Windows msys mingw ships with a mostly suitable preconfigured environment
 if(DEFINED ENV{MSYSCON})
         set(CMAKE_GENERATOR         "MSYS Makefiles" CACHE STRING "" FORCE)
         set(MINGW_PREFIX            "/mingw${MINGW_ARCH}")
-        set(MINGW_TOOL_PREFIX       "${MINGW_PREFIX}/bin/") 
+        set(MINGW_TOOL_PREFIX       "${MINGW_PREFIX}/bin/")
 
         # Msys compiler does not support @CMakeFiles/Include syntax
         set(CMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES   OFF)
@@ -47,7 +53,7 @@ set(CMAKE_CXX_COMPILER              ${MINGW_TOOL_PREFIX}g++)
 set(CMAKE_RC_COMPILER               ${MINGW_TOOL_PREFIX}windres)
 
 # adjust the default behaviour of the FIND_XXX() commands:
-# search headers and libraries in the target environment, search 
+# search headers and libraries in the target environment, search
 # programs in the host environment
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
