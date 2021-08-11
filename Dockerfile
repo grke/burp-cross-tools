@@ -13,7 +13,10 @@ COPY \
 RUN  \
 	cd /burp-cross-tools \
 	&& ./cross-tools/build-script.sh \
-	&& rm -rf cross-tools/source \
+	&& rm -rf cross-tools/source
+
+RUN \
+	cd /burp-cross-tools \
 	&& ./depkgs/build-script.sh \
 	&& rm -rf depkgs/source
 

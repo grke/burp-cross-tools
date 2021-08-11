@@ -14,7 +14,7 @@ readonly ver_binutils="2.29.1"
 readonly ver_gcc="7.3.0"
 readonly ver_gmp="6.1.2"
 readonly ver_isl="0.18"
-readonly ver_mingw="v5.0.3"
+readonly ver_mingw="v5.0.4"
 readonly ver_mpc="1.1.0"
 readonly ver_mpfr="4.0.1"
 
@@ -146,9 +146,9 @@ function build_mingw_w64() {
 	make install
 }
 
-orig_path="$PATH"
-build_mingw_w64 "$target_i686" "$mingw_w64_i686_prefix"
-export PATH="$orig_path"
+#orig_path="$PATH"
+#build_mingw_w64 "$target_i686" "$mingw_w64_i686_prefix"
+#export PATH="$orig_path"
 build_mingw_w64 "$target_x86_64" "$mingw_w64_x86_64_prefix"
 cd "$WORK_DIR"
 rm -fr "build" "packages"
