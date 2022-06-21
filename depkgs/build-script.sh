@@ -13,12 +13,12 @@ readonly ORIGPATH=$PATH
 readonly check_ver=0.10.0
 readonly librsync_ver=2.0.2
 readonly nsis_ver=2.46
-readonly openssl_ver=1.1.1l
+readonly openssl_ver=3.0.3
 readonly pcre_ver=8.45
 readonly scons_ver=2.3.5
 readonly stab2cv_ver=0.1
 readonly yajl_ver=2.1.0
-readonly zlib_ver=1.2.11
+readonly zlib_ver=1.2.12
 
 readonly check="check-$check_ver.tar.gz"
 readonly librsync="librsync-$librsync_ver.tar.gz"
@@ -28,18 +28,18 @@ readonly openssl="openssl-$openssl_ver.tar.gz"
 readonly pcre="pcre-$pcre_ver.tar.bz2"
 readonly scons="scons-$scons_ver.tar.gz"
 readonly stab2cv="stab2cv-$stab2cv_ver.tar.bz2"
-readonly yajl="lloyd-yajl-$yajl_ver-ga0ecdde.tar.gz"
+readonly yajl="yajl-$yajl_ver.tar.gz"
 readonly zlib="zlib-$zlib_ver.tar.gz"
 
 maybe_download "$check"     "http://downloads.sourceforge.net/check/$check"
 maybe_download "$librsync"  "https://github.com/librsync/librsync/archive/v$librsync_ver.tar.gz"
-maybe_download "$nsis_src"  "https://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_src"
-maybe_download "$nsis_zip"  "https://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_zip"
+maybe_download "$nsis_src"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_src"
+maybe_download "$nsis_zip"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_zip"
 maybe_download "$openssl"   "https://www.openssl.org/source/$openssl"
-maybe_download "$pcre"      "https://ftp.pcre.org/pub/pcre/$pcre"
-maybe_download "$scons"     "https://downloads.sourceforge.net/project/scons/scons/$scons_ver/$scons"
+maybe_download "$pcre"      "https://sourceforge.net/projects/pcre/files/pcre/$pcre_ver/$pcre"
+maybe_download "$scons"     "http://downloads.sourceforge.net/project/scons/scons/$scons_ver/$scons"
 maybe_download "$stab2cv"   "http://downloads.sourceforge.net/sourceforge/stab2cv/$stab2cv"
-maybe_download "$yajl"      "http://github.com/lloyd/yajl/tarball/$yajl_ver"
+maybe_download "$yajl"      "https://github.com/lloyd/yajl/archive/refs/tags/$yajl_ver.tar.gz"
 maybe_download "$zlib"      "http://zlib.net/$zlib"
 
 function apply_patches() {
@@ -106,9 +106,9 @@ function do_build() {
 
 	echo "build yajl"
 	cd "$SRCDIR"
-	cleanup "lloyd-yajl-66cb08c"
+	cleanup "yajl-$yajl_ver"
 	extract "$yajl"
-	cd "lloyd-yajl-66cb08c"
+	cd "yajl-$yajl_ver"
 	apply_patches yajl
 	sed -i -e "s#BURP_COMPILER_PREFIX#$COMPPREFIX#g" "$TGT.cmake"
 	sed -i -e "s#BURP_DEPKGS#$DEPKGS#g" "$TGT.cmake"
@@ -116,7 +116,7 @@ function do_build() {
 	make distro
 	make install
 	cp "$LIBRARY_PATH"/libyajl.dll "$BINARY_PATH"
-	cleanup "lloyd-yajl-66cb08c"
+	cleanup "yajl-$yajl_ver"
 
 	echo "build zlib"
 	cd "$SRCDIR"

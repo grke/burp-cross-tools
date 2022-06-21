@@ -6,15 +6,18 @@ RUN \
 		patch yasm wget bzip2 xz-utils \
 	&& apt-get install -y cmake autoconf libtool unzip libz-dev python \
 	&& rm -rf /var/lib/apt/lists/*
+COPY \
+	functions.sh /burp-cross-tools/
 
 COPY \
-	. /burp-cross-tools
-
+	cross-tools /burp-cross-tools/cross-tools
 RUN  \
 	cd /burp-cross-tools \
 	&& ./cross-tools/build-script.sh \
 	&& rm -rf cross-tools/source
 
+COPY \
+	depkgs /burp-cross-tools/depkgs
 RUN \
 	cd /burp-cross-tools \
 	&& ./depkgs/build-script.sh \
@@ -26,7 +29,6 @@ RUN \
 		libssl-dev uthash-dev libyajl-dev libacl1-dev libncurses-dev \
 		lcov openssh-client \
 	&& rm -rf /var/lib/apt/lists/*
-
 RUN \
 	apt-get update \
 	&& apt-get install -y valgrind \

@@ -30,7 +30,7 @@ maybe_download "$binutils" "https://ftp.gnu.org/gnu/binutils/$binutils"
 maybe_download "$gcc"      "https://ftp.gnu.org/gnu/gcc/gcc-$ver_gcc/$gcc"
 maybe_download "$gmp"      "https://ftp.gnu.org/gnu/gmp/$gmp"
 maybe_download "$isl"      "http://isl.gforge.inria.fr/$isl"
-maybe_download "$mingw"    "https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/$mingw"
+maybe_download "$mingw"    "http://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/$mingw"
 maybe_download "$mpc"      "https://ftp.gnu.org/gnu/mpc/$mpc"
 maybe_download "$mpfr"     "https://ftp.gnu.org/gnu/mpfr/$mpfr"
 
