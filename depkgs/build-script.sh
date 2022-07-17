@@ -13,7 +13,7 @@ readonly ORIGPATH=$PATH
 readonly check_ver=0.10.0
 readonly librsync_ver=2.0.2
 readonly nsis_ver=2.46
-readonly openssl_ver=3.0.3
+readonly openssl_ver=3.0.5
 readonly pcre_ver=8.45
 readonly scons_ver=2.3.5
 readonly stab2cv_ver=0.1
@@ -36,7 +36,7 @@ maybe_download "$librsync"  "https://github.com/librsync/librsync/archive/v$libr
 maybe_download "$nsis_src"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_src"
 maybe_download "$nsis_zip"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_zip"
 maybe_download "$openssl"   "https://www.openssl.org/source/$openssl"
-maybe_download "$pcre"      "https://sourceforge.net/projects/pcre/files/pcre/$pcre_ver/$pcre"
+maybe_download "$pcre"      "http://downloads.sourceforge.net/project/pcre/pcre/$pcre_ver/$pcre"
 maybe_download "$scons"     "http://downloads.sourceforge.net/project/scons/scons/$scons_ver/$scons"
 maybe_download "$stab2cv"   "http://downloads.sourceforge.net/sourceforge/stab2cv/$stab2cv"
 maybe_download "$yajl"      "https://github.com/lloyd/yajl/archive/refs/tags/$yajl_ver.tar.gz"
@@ -196,7 +196,9 @@ function do_build() {
 	cleanup "openssl-$openssl_ver"
 	extract "$openssl"
 	cd "openssl-$openssl_ver"
-	./Configure --prefix="$DEPKGS" \
+	./Configure \
+		enable-bf \
+		--prefix="$DEPKGS" \
 		shared zlib-dynamic \
 		threads \
 		--with-zlib-include="$INCLUDE_PATH" \
