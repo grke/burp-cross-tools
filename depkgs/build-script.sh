@@ -197,8 +197,6 @@ function do_build() {
 	extract "$openssl"
 	cd "openssl-$openssl_ver"
 	./Configure \
-		enable-legacy \
-		enable-bf \
 		--prefix="$DEPKGS" \
 		shared zlib-dynamic \
 		threads \
