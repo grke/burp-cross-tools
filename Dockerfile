@@ -1,19 +1,39 @@
-FROM debian:stretch
+FROM debian:bookworm
 
 RUN \
 	apt-get update \
-	&& apt-get install -y gcc g++ make flex bison \
-		patch yasm wget bzip2 xz-utils \
-	&& apt-get install -y cmake autoconf libtool unzip libz-dev python \
+	&& apt-get install -y \
+		bison \
+		bzip2 \
+		flex \
+		g++ \
+		gcc \
+		make \
+		patch \
+		wget \
+		xz-utils \
+		yasm \
+	&& apt-get install -y \
+		autoconf \
+		cmake \
+		libtool \
+		libz-dev \
+		python-is-python3 \
+		python3-distutils \
+		unzip \
 	&& rm -rf /var/lib/apt/lists/*
-
-COPY \
-	. /burp-cross-tools
+	
+RUN mkdir -p /burp-cross-tools
+COPY cross-tools /burp-cross-tools/cross-tools
+RUN ls /burp-cross-tools
+COPY functions.sh /burp-cross-tools
 
 RUN  \
 	cd /burp-cross-tools \
 	&& ./cross-tools/build-script.sh \
 	&& rm -rf cross-tools/source
+
+COPY depkgs /burp-cross-tools/depkgs
 
 RUN \
 	cd /burp-cross-tools \
