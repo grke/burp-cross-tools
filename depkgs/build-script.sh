@@ -1,5 +1,4 @@
-#!/usr/bin/env bash
-
+#!/bin/bash
 set -e
 
 WORK_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -10,15 +9,15 @@ readonly CROSS="$WORK_DIR"/../cross-tools
 readonly SRCDIR="$WORK_DIR"/source
 readonly ORIGPATH=$PATH
 
-readonly check_ver=0.10.0
+readonly check_ver=0.15.2
 readonly librsync_ver=2.0.2
-readonly nsis_ver=2.46
+readonly nsis_ver=3.09
 readonly openssl_ver=3.0.5
 readonly pcre_ver=8.45
-readonly scons_ver=2.3.5
+readonly scons_ver=3.1.2
 readonly stab2cv_ver=0.1
 readonly yajl_ver=2.1.0
-readonly zlib_ver=1.2.12
+readonly zlib_ver=1.3
 
 readonly check="check-$check_ver.tar.gz"
 readonly librsync="librsync-$librsync_ver.tar.gz"
@@ -31,10 +30,10 @@ readonly stab2cv="stab2cv-$stab2cv_ver.tar.bz2"
 readonly yajl="yajl-$yajl_ver.tar.gz"
 readonly zlib="zlib-$zlib_ver.tar.gz"
 
-maybe_download "$check"     "http://downloads.sourceforge.net/check/$check"
+maybe_download "$check"     "https://github.com/libcheck/check/releases/download/$check_ver/$check"
 maybe_download "$librsync"  "https://github.com/librsync/librsync/archive/v$librsync_ver.tar.gz"
-maybe_download "$nsis_src"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_src"
-maybe_download "$nsis_zip"  "http://downloads.sourceforge.net/project/nsis/NSIS%202/$nsis_ver/$nsis_zip"
+maybe_download "$nsis_src"  "https://sourceforge.net/projects/nsis/files/NSIS%203/$nsis_ver/$nsis_src"
+maybe_download "$nsis_zip"  "https://sourceforge.net/projects/nsis/files/NSIS%203/$nsis_ver/$nsis_zip"
 maybe_download "$openssl"   "https://www.openssl.org/source/$openssl"
 maybe_download "$pcre"      "http://downloads.sourceforge.net/project/pcre/pcre/$pcre_ver/$pcre"
 maybe_download "$scons"     "http://downloads.sourceforge.net/project/scons/scons/$scons_ver/$scons"
@@ -167,8 +166,7 @@ function do_build() {
 	cleanup "scons-$scons_ver"
 	extract "$scons"
 	cd "scons-$scons_ver"
-	apply_patches scons
-	python2 setup.py install --prefix="$DEPKGS"/scons
+	python setup.py install --prefix="$DEPKGS"/scons
 	cleanup "scons-$scons_ver"
 
 	echo "build nsis"
@@ -181,14 +179,15 @@ function do_build() {
 	cleanup "nsis-$nsis_ver-src"
 	extract "$nsis_src"
 	cd "nsis-$nsis_ver-src"
-	apply_patches nsis
+	# apply_patches nsis
 	"$DEPKGS"/scons/bin/scons SKIPSTUBS=all SKIPPLUGINS=all \
 		SKIPUTILS=all SKIPMISC=all NSIS_CONFIG_LOG=yes \
 		XGCC_W32_PREFIX="$COMPPREFIX" \
 		PREFIX="$DEPKGS"/nsis PREFIX_BIN="$DEPKGS"/nsis/Bin \
 		PREFIX_CONF="$DEPKGS"/nsis PREFIX_DATA="$DEPKGS"/nsis \
 		PREFIX_DOC="$DEPKGS"/nsis/Docs
-	cp -p build/release/makensis/makensis "$DEPKGS"/nsis
+	find -name makensis
+	cp -p build/urelease/makensis/makensis "$DEPKGS"/nsis
 	cleanup "nsis-$nsis_ver-src"
 
 	echo "build openssl"

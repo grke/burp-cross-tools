@@ -1,3 +1,6 @@
-depkgs/source/vss.tar.gz
+cross-tools/source/*.bz2
 cross-tools/source/*.gz
 cross-tools/source/*.xz
+depkgs/source/*.bz2
+depkgs/source/*.gz
+depkgs/source/*.zip
