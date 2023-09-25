@@ -9,10 +9,10 @@ readonly CROSS="$WORK_DIR"/../cross-tools
 readonly SRCDIR="$WORK_DIR"/source
 readonly ORIGPATH=$PATH
 
-readonly check_ver=0.15.2
+readonly check_ver=0.10.0
 readonly librsync_ver=2.0.2
 readonly nsis_ver=3.09
-readonly openssl_ver=3.0.5
+readonly openssl_ver=1.1.1l
 readonly pcre_ver=8.45
 readonly scons_ver=3.1.2
 readonly stab2cv_ver=0.1
